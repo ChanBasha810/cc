@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    video {
+      width: 360px;
+      height: 640px;
+      max-width: 90vw;
+      max-height: 75vh;
+      border-radius: 16px;
+      background: #111;
+      object-fit: cover;
+    }
+
+    button {
+      padding: 16px 32px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .download {
+      background: white;
+      color: black;
+    }
+
+    .status {
+      font-size: 13px;
+      color: #facc15;
+    }
+
+    .glow-button {
+      position: relative;
+      padding: 16px 36px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(
+        135deg,
+        #6366f1 0%,
+        #a855f7 50%,
+        #ec4899 100%
+      );
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      outline: none;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.4);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .glow-button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      transition: 0.5s;
+    }
+
+    .glow-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 30px -5px rgba(236, 72, 153, 0.6);
+    }
+
+    .glow-button:hover::after {
+      left: 100%;
+    }
+
+    .glow-button:active {
+      transform: translateY(1px) scale(0.98);
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <h3>SUMAA Birthday Video</h3>
+
+<video
+id="vid"
+src="/videos/suma.mp4"
+controls
+autoplay
+playsinline
+
+> </video>
+
+  <div class="button-container">
+
+  <button class="download" onclick="realDownload()">
+    Download
+  </button>
+
+  <a href="password.html">
+    <button class="glow-button">
+      CLICK HERE
+    </button>
+  </a>
+
+</div>
+
+
+  <p id="status" class="status"></p>
+
+  
+
+  <script>
+    async function realDownload() {
+      const status = document.getElementById("status");
+
+      // IMPORTANT: Same file used by the video
+      const videoUrl = "/videos/suma.mp4";
+
+      try {
+        status.textContent = "Downloading... 0%";
+
+        const response = await fetch(videoUrl);
+
+        if (!response.ok) {
+          throw new Error("Video not found");
+        }
+
+        const contentLength = response.headers.get("content-length");
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+        let loaded = 0;
+        const reader = response.body.getReader();
+        const chunks = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          chunks.push(value);
+          loaded += value.length;
+
+          if (total) {
+            const percent = Math.round((loaded / total) * 100);
+            status.textContent = `Downloading... ${percent}%`;
+          }
+        }
+
+        const blob = new Blob(chunks, {
+          type: "video/mp4"
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Sumaa-Birthday.mp4";
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 1000);
+
+        status.textContent = "Download complete!";
+      } catch (err) {
+        console.error(err);
+
+        status.textContent = "Download failed. Opening video...";
+
+        // Fallback
+        const a = document.createElement("a");
+        a.href = videoUrl;
+        a.download = "Sumaa-Birthday.mp4";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    }
+  </script>
+
+</body>
+</html>
